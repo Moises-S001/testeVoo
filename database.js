@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
-const uri = 'mongodb://localhost:27017';
+require('dotenv').config();
+const uri = process.env.URLBancoDB;
 async function conecteDB() {
     try{
         await mongoose.connect(uri);
-        console.log('sucess')
+        console.log('sucess BancoDB')
 
     }catch(error){
-        console.log('Erro', error);
+        console.log('Erro ao conectar ao BancoDB', error);
         process.exit(1);
 
     }
