@@ -18,8 +18,13 @@ const path = require('path'); // Importe o módulo path para lidar com caminhos
 const upload = require('./config/multer.js');
 const { getFolderPath}= require('./utils/path_Folder.js');
 //inicio do codigo
-
-app.use(cors());
+const corsOptions = {
+    origin: 'https://arquivos-voo.vercel.app', // A URL do seu frontend na Vercel
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
+}
+app.use(cors(corsOptions));
 
 conecteDB().then(()=>{
     app.use(express.json());
@@ -386,6 +391,35 @@ console.log('passou aqui')
         res.status(500).json({
             error: 'Erro interno do servidor'
         });
+
+// --- NOVA ROTA PÚBLICA PARA VISUALIZAÇÃO ---
+    app.get('/view/:fileId', async (req, res) => {
+    try {
+        const fileId = req.params.fileId;
+    
+    // Encontre o arquivo no banco de dados.
+    // A rota é pública, mas você pode adicionar uma camada de segurança aqui se necessário
+    // (ex: verificar se o arquivo é 'público' ou se o link é temporário).
+        const file = await File.findById(fileId);
+
+    if (!file) {
+      return res.status(404).json({ msg: 'Arquivo não encontrado.' });
+    }
+
+    // Serve o arquivo usando o caminho físico armazenado no banco de dados
+    res.download(file.path, file.name, (err) => {
+      if (err) {
+        console.error('Erro ao servir arquivo para visualização:', err);
+        return res.status(500).send('Erro interno do servidor.');
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro na rota de visualização:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+    });
+
     }
 });
 
