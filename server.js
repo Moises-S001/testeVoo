@@ -419,9 +419,8 @@ app.get('/view/:fileId', async (req, res) => {
         if (fileNameForPath) {
             fileNameForPath = fileNameForPath.normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // Remove acentos
         }
-
-        const userBaseFolder = path.join(process.cwd(), 'uploads', userIdString);
-        const filePath = path.join(userBaseFolder, fileNameForPath);
+        
+        const filePath = path.join(folderPath, fileNameForPath);
 
         console.log(`NOVO CAMINHO CALCULADO: ${filePath}`);
 
