@@ -156,7 +156,7 @@ app.get('/download/:fileId', authenticateToken, async (req, res)=>{
 
         const file = await File.findById(fileId);
         if (!file || file.userId.toString() !== userId){
-            return res.status(404),json({msg: 'Arquivo não encontrado ou acesso negado'});
+            return res.status(404).json({msg: 'Arquivo não encontrado ou acesso negado'});
         }
         const folderPath = await getFolderPath(userId, file.parentFolderId);
         const filePath = path.join( folderPath, file.filename);
@@ -179,7 +179,7 @@ app.delete('/file/:fileId',authenticateToken, async(req, res) => {
         const { fileId } = req.params;
         const userId = req.user.userId;
 
-        const file = await File.findByIdAndDelete({ _id: findById, userId});
+        const file = await File.findOneAndDelete({ _id: fileId, userId: userId});
 
     if (!file) {
       return res.status(404).json({ message: 'Arquivo não encontrado ou acesso negado' });
@@ -391,9 +391,11 @@ console.log('passou aqui')
         res.status(500).json({
             error: 'Erro interno do servidor'
         });
+    }
+});
 
 // --- NOVA ROTA PÚBLICA PARA VISUALIZAÇÃO ---
-    app.get('/view/:fileId', async (req, res) => {
+app.get('/view/:fileId', async (req, res) => {
     try {
         const fileId = req.params.fileId;
     
@@ -418,9 +420,6 @@ console.log('passou aqui')
     console.error('Erro na rota de visualização:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
-    });
-
-    }
 });
 
 
