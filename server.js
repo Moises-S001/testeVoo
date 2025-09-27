@@ -308,7 +308,7 @@ app.post('/upload', authenticateToken, upload.single('arquivo'), async(req, res)
         const userId = req.user.userId;
         const file = req.file;
         const { parentFolderId} = req.body;
-        console.log(req);
+       
         
 
         if (parentFolderId){
@@ -420,7 +420,8 @@ app.get('/view/:fileId', async (req, res) => {
             fileNameForPath = fileNameForPath.normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // Remove acentos
         }
 
-        const filePath = path.join(folderPath, fileNameForPath);
+        const userBaseFolder = path.join(process.cwd(), 'uploads', userIdString);
+        const filePath = path.join(userBaseFolder, fileNameForPath);
 
         console.log(`NOVO CAMINHO CALCULADO: ${filePath}`);
 
