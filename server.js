@@ -398,28 +398,36 @@ console.log('passou aqui')
 app.get('/view/:fileId', async (req, res) => {
     try {
         const fileId = req.params.fileId;
-    
-    // Encontre o arquivo no banco de dados.
-    // A rota é pública, mas você pode adicionar uma camada de segurança aqui se necessário
-    // (ex: verificar se o arquivo é 'público' ou se o link é temporário).
         const file = await File.findById(fileId);
 
-    if (!file) {
-      return res.status(404).json({ msg: 'Arquivo não encontrado.' });
+        if (!file) {
+            return res.status(404).json({ msg: 'Arquivo não encontrado.' });
+        }
+
+        // --- CORREÇÃO AQUI ---
+        // 1. Define o cabeçalho Content-Type (Mime-type)
+        res.setHeader('Content-Type', file.mimetype);
+        
+        // 2. Define o Content-Disposition para 'inline' (visualizar), não 'attachment' (baixar)
+        // Isso força o navegador a tentar exibir o arquivo.
+        res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+
+        // 3. Usa res.sendFile para enviar o arquivo
+        res.sendFile(file.path, (err) => {
+            if (err) {
+                console.error('Erro ao servir arquivo para visualização:', err);
+                // Aqui você pode retornar um 404 se o erro for ENOENT
+                if (err.code === 'ENOENT') {
+                     return res.status(404).send('Arquivo físico não encontrado.');
+                }
+                return res.status(500).send('Erro interno do servidor.');
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro na rota de visualização:', error);
+        res.status(500).json({ error: 'Erro interno do servidor' });
     }
-
-    // Serve o arquivo usando o caminho físico armazenado no banco de dados
-    res.download(file.path, file.name, (err) => {
-      if (err) {
-        console.error('Erro ao servir arquivo para visualização:', err);
-        return res.status(500).send('Erro interno do servidor.');
-      }
-    });
-
-  } catch (error) {
-    console.error('Erro na rota de visualização:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
 });
 
 
