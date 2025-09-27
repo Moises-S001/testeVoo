@@ -18,13 +18,13 @@ const path = require('path'); // Importe o módulo path para lidar com caminhos
 const upload = require('./config/multer.js');
 const { getFolderPath}= require('./utils/path_Folder.js');
 //inicio do codigo
-const corsOptions = {
-    origin: 'https://arquivos-voo.vercel.app', // A URL do seu frontend na Vercel
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204
-}
-app.use(cors(corsOptions));
+// const corsOptions = {
+//     origin: 'https://arquivos-voo.vercel.app', // A URL do seu frontend na Vercel
+//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//     credentials: true,
+//     optionsSuccessStatus: 204
+// }
+app.use(cors());
 
 conecteDB().then(()=>{
     app.use(express.json());
