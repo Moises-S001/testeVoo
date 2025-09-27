@@ -308,7 +308,8 @@ app.post('/upload', authenticateToken, upload.single('arquivo'), async(req, res)
         const userId = req.user.userId;
         const file = req.file;
         const { parentFolderId} = req.body;
-        console.log(req)
+        console.log(req);
+        
 
         if (parentFolderId){
             const parentFolder = await File.findOne({ _id: parentFolderId, userId, isFolder: true});
@@ -317,11 +318,13 @@ app.post('/upload', authenticateToken, upload.single('arquivo'), async(req, res)
             }
         }
 
+        const cleanName = file.originalname.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+
 // sava os dados do arquivo no mongoDB
        const newFile = await File.create({
         userId,
         name:file.originalname,
-        filename: file.filename,
+        filename: cleanName,
         path: file.path,
         size: file.size,
         mimetype: file.mimetype,
@@ -411,7 +414,13 @@ app.get('/view/:fileId', async (req, res) => {
 
         const folderPath = await getFolderPath(userIdString, parentFolderIdString);
 
-        const filePath = path.join(folderPath, file.filename);
+        let fileNameForPath = file.filename || file.name;
+
+        if (fileNameForPath) {
+            fileNameForPath = fileNameForPath.normalize('NFD').replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+        }
+
+        const filePath = path.join(folderPath, fileNameForPath);
 
         console.log(`NOVO CAMINHO CALCULADO: ${filePath}`);
 
