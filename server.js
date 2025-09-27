@@ -406,7 +406,10 @@ app.get('/view/:fileId', async (req, res) => {
             return res.status(404).json({ msg: 'Arquivo não encontrado.' });
         }
 
-        const folderPath = await getFolderPath(file.userId, file.parentFolderId);
+        const userIdString = file.userId.toString();
+        const parentFolderIdString = file.parentFolderId ? file.parentFolderId.toString() : null;
+
+        const folderPath = await getFolderPath(userIdString, parentFolderIdString);
 
         const filePath = path.join(folderPath, file.filename);
 
