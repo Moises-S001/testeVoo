@@ -152,9 +152,9 @@ app.post('/folder', authenticateToken,async(req, res)=>{
 app.get('/download/:fileId', authenticateToken, async (req, res)=>{
     try{
         const {fileId} = req.params;
-        const userId = req.user.user.Id;
+        const userId = req.user.userId;
 
-        const file = await file.findById(fileId);
+        const file = await File.findById(fileId);
         if (!file || file.userId.toString() !== userId){
             return res.status(404),json({msg: 'Arquivo não encontrado ou acesso negado'});
         }
