@@ -12,9 +12,16 @@ const path = require('path');
 
     while (currentFolderId){
         const folder = await File.findById(currentFolderId);
-        if(!folder || folder.userId.toString()!== userId || !folder.isFolder){
-            throw new Error('Caminho ivalido ou acesso negado');
+
+        if (!folder || !folder.isFolder) {
+            throw new Error('Pasta pai não encontrada no banco de dados.');
         }
+
+        if (folder.userId.toString() != userId) {
+            throw new Error('Acesso negado: pasta pertence a outro usuário.')
+        }
+
+
         folderNames.unshift(folder.name);
         currentFolderId = folder.parentFolderId;
     }
