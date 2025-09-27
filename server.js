@@ -352,47 +352,49 @@ app.delete('/usuarios/:id', authenticateToken, async (req, res) =>{
    
 });
 
-//rota para visualizar o conteudo do arquivo
-app.get('/file/:fileId', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.userId;
-        const fileId = req.params.fileId;
-        const file = await File.findOne({
-            _id: fileId,
-            userId: userId
-        });
-console.log('passou aqui')
-        if (!file) {
-            return res.status(404).json({
-                msg: 'Arquivo não encontrado.'
-            });
-        }
+/* //rota para visualizar o conteudo do arquivo
+
+// app.get('/file/:fileId', authenticateToken, async (req, res) => {
+//     try {
+//         const userId = req.user.userId;
+//         const fileId = req.params.fileId;
+//         const file = await File.findOne({
+//             _id: fileId,
+//             userId: userId
+//         });
+// console.log('passou aqui')
+//         if (!file) {
+//             return res.status(404).json({
+//                 msg: 'Arquivo não encontrado.'
+//             });
+//         }
         
-        // CORREÇÃO AQUI: Verificando o caminho físico do arquivo
-        // Usamos fsPromises.access para verificar se o arquivo existe de forma assíncrona
-        // O método .access() lança um erro se o arquivo não existir
-        await fsPromises.access(file.path, fs.constants.F_OK);
+//         // CORREÇÃO AQUI: Verificando o caminho físico do arquivo
+//         // Usamos fsPromises.access para verificar se o arquivo existe de forma assíncrona
+//         // O método .access() lança um erro se o arquivo não existir
+//         await fsPromises.access(file.path, fs.constants.F_OK);
 
-        // Se o arquivo existir, envie-o
-        res.download(file.path, file.name, (err) => {
-            if (err) {
-                console.error('Erro ao servir arquivo:', err);
-                return res.status(500).send('Erro interno do servidor.');
-            }
-        });
+//         // Se o arquivo existir, envie-o
+//         res.download(file.path, file.name, (err) => {
+//             if (err) {
+//                 console.error('Erro ao servir arquivo:', err);
+//                 return res.status(500).send('Erro interno do servidor.');
+//             }
+//         });
 
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            return res.status(404).json({
-                msg: 'O arquivo físico não foi encontrado no servidor.'
-            });
-        }
-        console.error('Erro ao servir arquivo:', error);
-        res.status(500).json({
-            error: 'Erro interno do servidor'
-        });
-    }
-});
+//     } catch (error) {
+//         if (error.code === 'ENOENT') {
+//             return res.status(404).json({
+//                 msg: 'O arquivo físico não foi encontrado no servidor.'
+//             });
+//         }
+//         console.error('Erro ao servir arquivo:', error);
+//         res.status(500).json({
+//             error: 'Erro interno do servidor'
+//         });
+//     }
+// });*/
+
 
 // --- NOVA ROTA PÚBLICA PARA VISUALIZAÇÃO ---
 app.get('/view/:fileId', async (req, res) => {
@@ -404,16 +406,24 @@ app.get('/view/:fileId', async (req, res) => {
             return res.status(404).json({ msg: 'Arquivo não encontrado.' });
         }
 
+        const folderPath = await getFolderPath(file.userId, file.parentFolderId);
+
+        const filePath = path.join(folderPath, file.filename);
+
+        console.log(`NOVO CAMINHO CALCULADO: ${filePath}`);
+
+        console.log(`Tentando servir arquivo: ${file.path}`);
+        console.log(`MimeType: ${file.mimetype}`);
+
         // --- CORREÇÃO AQUI ---
         // 1. Define o cabeçalho Content-Type (Mime-type)
         res.setHeader('Content-Type', file.mimetype);
-        
         // 2. Define o Content-Disposition para 'inline' (visualizar), não 'attachment' (baixar)
         // Isso força o navegador a tentar exibir o arquivo.
         res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
 
         // 3. Usa res.sendFile para enviar o arquivo
-        res.sendFile(file.path, (err) => {
+        res.sendFile(filePath, (err) => {
             if (err) {
                 console.error('Erro ao servir arquivo para visualização:', err);
                 // Aqui você pode retornar um 404 se o erro for ENOENT
