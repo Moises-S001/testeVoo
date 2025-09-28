@@ -4,6 +4,19 @@ const { promises: fs } = require('fs'); // Para garantir que a pasta do usuário
 //const File = require('../modelos/File.js');
 //const { getFolderPath}= require('../utils/path_Folder.js');
 
+const normalizeFileName = (name) => {
+    // 1. Remove o caminho da pasta para ficar apenas com o nome base
+    const baseName = path.basename(name);
+    
+    // 2. Transforma caracteres acentuados em suas versões não acentuadas e remove outros lixos
+    const normalized = baseName.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+    
+    // Opcional: Substituir espaços por underscores e remover caracteres não alfanuméricos
+    // const safeName = normalized.replace(/[^a-zA-Z0-9.-]/g, '_');
+    
+    return normalized; 
+};
+
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     // A propriedade file.originalname contém o caminho relativo da pasta
@@ -31,8 +44,8 @@ const storage = multer.diskStorage({
   // O nome do arquivo será apenas o nome base
   filename: (req, file, cb) => {
     // Pega o nome do arquivo, ex: "arquivo.txt"
-    const filename = path.basename(file.originalname);
-    cb(null, filename);
+    const safeFilename = normalizeFileName(file.originalname);
+    cb(null, safeFilename);
   },
 });
 
